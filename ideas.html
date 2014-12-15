@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="./assets/css/basscss.css">
+	<script src="assets/lib/jquery/dist/jquery.min.js"></script>
+
+	<title>Finances</title>
+
+	<script type="text/javascript">
+	  !function(a,b){a("Keen","https://d26b395fwzu5fz.cloudfront.net/3.1.0/keen.min.js",b)}(function(a,b,c){var d,e,f;c["_"+a]={},c[a]=function(b){c["_"+a].clients=c["_"+a].clients||{},c["_"+a].clients[b.projectId]=this,this._config=b},c[a].ready=function(b){c["_"+a].ready=c["_"+a].ready||[],c["_"+a].ready.push(b)},d=["addEvent","setGlobalProperties","trackExternalLink","on"];for(var g=0;g<d.length;g++){var h=d[g],i=function(a){return function(){return this["_"+a]=this["_"+a]||[],this["_"+a].push(arguments),this}};c[a].prototype[h]=i(h)}e=document.createElement("script"),e.async=!0,e.src=b,f=document.getElementsByTagName("script")[0],f.parentNode.insertBefore(e,f)},this);
+	</script>
+
+</head>
+<body>
+
+	<script type="text/javascript">
+
+		  var client = new Keen({
+		    projectId: "5469278d7d8cb9752e18dd74",
+		    writeKey: "422c30d0d75d849d564f89663ba7948be28b5d2404c9828ada98b7452088c5adcb8c09a5d23b34e50baad1054de6b5f5695deccc7583440c558817654bcf136773ee14e1725b9378fffddf2596125b1e037c69529156d0e3fbed4c23508ab14a4cfd21b085c343515dfefcef6baaa387",
+		    readKey: "29bf9edd539fef52f410a34331f64849a5399737087d855ed32b90629bb616773e9bb3e20b92fd16f55481649d0cd71888ac18b80cc872b37c81911328b10d15bc88deb64136f6c2c325ae6731b3059336bb26341b4d2a497266f1a63584328354b9289e7f711d34cb159c4a06ad977e",
+		    protocol: "https",
+		    host: "api.keen.io/3.0",
+		    requestType: "jsonp"
+		  });
+
+		$(document).ready(function() {
+			$('#finances').submit(function(event){
+				event.preventDefault();
+				var vals = $(this).serializeArray();
+				var keenObj = {}
+				for(var i=0; i < vals.length; i++){
+					debugger
+					if(i === 0){
+						keenObj.category = vals[i].value
+					}
+					if (i === 1) {
+						keenObj.github = vals[i].value
+					}
+					if (i === 2) {
+						keenObj.title = vals[i].value
+					}
+					if (i === 3) {
+						keenObj.description = vals[i].value
+					}
+					if (i === 4) {
+						keenObj.notes = vals[i].value
+					}
+				}
+				keenObj.keen = { timestamp: new Date().toISOString() }
+				console.log(keenObj)
+		      	client.addEvent("ideas", keenObj);
+		      	alert("You've submitted to keen! for this category: " + keenObj.category + "this idea: " + keenObj.title )
+			})
+		});
+
+	</script>
+
+	<div class="container half-width">
+		<h1> Finances Form </h1>
+		<div class="clearfix">
+			<form class="sm-col-12" id="finances">
+				<label>Category</label>
+				<input name="category" type="text" class="block full-width field-light">
+				<label>Github</label>
+				<input name="github" value="https://github.com/jonathanpeterwu/"type="text" class="block full-width field-light">
+				<label>Title</label>
+				<input name="title" type="text" class="block full-width field-light">
+				<label>Description</label>
+				<input name="description" type="text" class="block full-width field-light">
+				<label>Notes</label>
+				<input name="notes" type="text" class="block full-width field-light">
+				<button type="submit" class="button-blue">Submit</button>
+			</form>
+		</div>
+	</div>
+</body>
+</html>

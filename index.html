@@ -1,0 +1,309 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Layouts &raquo; Hero Sidebar</title>
+  <link rel="stylesheet" href="./assets/lib/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./assets/css/keen-dashboards.css">
+  <link rel="stylesheet" href="./assets/css/basscss.css">
+
+</head>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+<!-- <script src="https://d26b395fwzu5fz.cloudfront.net/3.1.0/keen.min.js" type="text/javascript"></script> -->
+
+<script type="text/javascript">
+  !function(a,b){a("Keen","https://d26b395fwzu5fz.cloudfront.net/3.1.0/keen.min.js",b)}(function(a,b,c){var d,e,f;c["_"+a]={},c[a]=function(b){c["_"+a].clients=c["_"+a].clients||{},c["_"+a].clients[b.projectId]=this,this._config=b},c[a].ready=function(b){c["_"+a].ready=c["_"+a].ready||[],c["_"+a].ready.push(b)},d=["addEvent","setGlobalProperties","trackExternalLink","on"];for(var g=0;g<d.length;g++){var h=d[g],i=function(a){return function(){return this["_"+a]=this["_"+a]||[],this["_"+a].push(arguments),this}};c[a].prototype[h]=i(h)}e=document.createElement("script"),e.async=!0,e.src=b,f=document.getElementsByTagName("script")[0],f.parentNode.insertBefore(e,f)},this);
+</script>
+
+<script type="text/javascript">
+
+ var client = new Keen({
+   projectId: "5469278d7d8cb9752e18dd74",
+   readKey: "29bf9edd539fef52f410a34331f64849a5399737087d855ed32b90629bb616773e9bb3e20b92fd16f55481649d0cd71888ac18b80cc872b37c81911328b10d15bc88deb64136f6c2c325ae6731b3059336bb26341b4d2a497266f1a63584328354b9289e7f711d34cb159c4a06ad977e",
+   protocol: "https",
+   host: "api.keen.io/3.0",
+   requestType: "jsonp"
+ });
+
+ Keen.ready(function(){
+  var query = new Keen.Query("maximum", {
+    eventCollection: "finances",
+    targetProperty: "amount",
+    groupBy: "account",
+    filters: [{"property_name":"amount","operator":"gt","property_value":0}]
+  });
+  client.draw(query, document.getElementById("chart-stage-finances"), {
+    chartType: "piechart",
+    title: "Net Wealth Percentages"
+  });
+
+  var count = new Keen.Query("sum", {
+    eventCollection: "finances",
+    targetProperty: "amount",
+    groupBy: "month",
+    filters: [{"property_name":"amount","operator":"gt","property_value":0}]
+  });
+  client.draw(count, document.getElementById("chart-stage-savings"), {
+    chartType: "areachart",
+    title: "Monthly Savings",
+    chartOptions: {
+        legend: { position: "none" },
+        hAxis: { slantedText: true, slantedTextAngle: 45},
+    }
+  });
+
+  this.query = query
+
+  var all = new Keen.Query("sum", {
+    eventCollection: "finances",
+    targetProperty: "amount",
+    groupBy: "month",
+    filters: [{"property_name":"amount","operator":"lt","property_value":0}]
+  });
+
+  client.draw(all, document.getElementById("chart-stage-debt"), {
+    chartType: "areachart",
+    title: "Monthly CC",
+    chartOptions: {
+      vAxis: {
+        max: -10000
+      },
+      legend: { position: "none" },
+      hAxis: { slantedText: true, slantedTextAngle: 45}
+    }
+  });
+
+  window.setTimeout(function(){
+    var securityBucket = {}
+    var growthBucket = {}
+    var securityTotal = 0
+    var growthTotal = 0
+    for(var i=0; i < this.query.data.result.length; i++){
+      var account = this.query.data.result[i].account
+      var result = this.query.data.result[i].result
+      if(account === "Betterment" ||  account === "Acorn"){
+        securityBucket[account] = result
+        securityTotal += (result * .2)
+        growthTotal += (result * .8)
+      } else {
+        growthBucket[account] = result
+        growthTotal += result
+      }
+    }
+    var growthPercent = growthTotal / (securityTotal + growthTotal)
+    var securityPercent = securityTotal / (securityTotal + growthTotal)
+
+    document.getElementById('chart-notes-percent').innerText = "Growth Percent: " + Math.ceil(growthPercent * 100) + "%, Security Percent: " + Math.ceil(securityPercent * 100) + "%;"
+
+    //   google.load('visualization', '1', {'packages':['corechart']});
+
+    //   // Set a callback to run when the Google Visualization API is loaded.
+    //   google.setOnLoadCallback(drawChart);
+
+    //   // Callback that creates and populates a data table,
+    //   // instantiates the pie chart, passes in the data and
+    //   // draws it.
+    //   function drawChart() {
+
+    //     // Create our data table.
+    //     data = new google.visualization.DataTable();
+    //     data.addColumn('string', 'Growth');
+    //     data.addColumn('number', 'Security');
+    //     data.addRows([
+    //       ['Mushrooms', 3],
+    //       ['Onions', 1],
+    //       ['Olives', 1],
+    //       ['Zucchini', 1],
+    //       ['Pepperoni', 2]
+    //     ]);
+
+    //     // Set chart options
+    //     var options = {'title':'Wealth Percentage',
+    //                    'width':400,
+    //                    'height':300};
+
+    //     // Instantiate and draw our chart, passing in some options.
+    //     chart = new google.visualization.PieChart(document.getElementById('chart-stage-percent'));
+    //     google.visualization.events.addListener(chart, 'select', selectHandler);
+    //     chart.draw(data, options);
+      // }
+
+      // function selectHandler() {
+      //   var selectedItem = chart.getSelection()[0];
+      //   var value = data.getValue(selectedItem.row, 0);
+      //   alert('The user selected ' + value);
+      // }
+
+    // var result = [growthPercent, securityPercent]
+    // client.draw(result, document.getElementById("chart-stage-percent"), {
+    //   chartType: "piechart",
+    //   title: "Wealth Percentages"
+    // });
+
+  }.bind(this), 3000)
+
+  // var all = new Keen.Query("extraction", {
+  //   eventCollection: "healthpoints",
+  //   timeframe: "this_7_days"
+  // });
+  // client.draw(all, document.getElementById("chart-stage-health"), {
+  //   chartType: "table",
+  //   title: "All health data"
+  // });
+
+  // var debt = new Keen.Query("sum", {
+  //   eventCollection: "finances",
+  //   targetProperty: "amount",
+  //   groupBy: "month",
+  //   filters: [{"property_name":"month","operator":"eq","property_value":11},{"property_name":"amount","operator":"lt","property_value":0}]
+  // });
+  //   client.draw(debt, document.getElementById("chart-stage-debt"), {
+  //           chartType: "metric",
+  //           title: "Page Views"
+  //   });
+});
+
+
+
+</script>
+
+
+<body class="application">
+
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a class="navbar-brand" href="./">Layouts &raquo; Hero Sidebar</a>
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-left">
+          <li><a href="./finances.html">Finances</a></li>
+          <li><a href="./ideas.html">Debt</a></li>
+          <li><a href="https://github.com/keenlabs/dashboards/tree/gh-pages/layouts/hero-sidebar">Source</a></li>
+          <li><a href="https://groups.google.com/forum/#!forum/keen-io-devs">Community</a></li><li><a href="http://stackoverflow.com/questions/tagged/keen-io?sort=newest&pageSize=15">Technical Support</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid">
+
+    <div class="row">
+      <div class="col-sm-3">
+        <div class="chart-wrapper">
+          <div class="chart-title">
+            Financials
+          </div>
+          <div class="chart-stage-health">
+          </div>
+          <div class="chart-notes">
+            Notes about this chart
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-9">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="chart-wrapper">
+              <div class="chart-title">
+                Cell Title
+              </div>
+              <div class="chart-stage">
+                <img data-src="holder.js/100%x240/white">
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="chart-wrapper">
+              <div class="chart-title-finances">
+                Finances
+              </div>
+              <div id="chart-stage-finances">
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="chart-wrapper">
+              <div class="chart-title-">
+              </div>
+              <div id="chart-stage-percent">
+              </div>
+              <div id="chart-notes-percent">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="chart-wrapper">
+              <div class="chart-title-savings">
+                Savings
+              </div>
+              <div id="chart-stage-savings">
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="chart-wrapper">
+              <div class="chart-title-debt">
+                Debt
+              </div>
+              <div id="chart-stage-debt">
+              </div>
+              <div class="chart-notes">
+                Notes about this chart
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <hr>
+
+  <p class="small text-muted">Built with &#9829; by <a href="https://keen.io">Keen IO</a></p>
+
+</div>
+
+<script src="assets/lib/jquery/dist/jquery.min.js"></script>
+<script src="assets/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+<script src="assets/lib/holderjs/holder.js"></script>
+<script>
+  Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
+</script>
+
+<!-- // <script src="assets/lib/keen-js/dist/keen.min.js"></script> -->
+<script src="assets/js/meta.js"></script>
+
+</body>
+</html>

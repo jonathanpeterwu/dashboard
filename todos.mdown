@@ -1,0 +1,7 @@
+#Goal: Set up a dashboard to track the following
+
+
+####Finances (credit cards, income, savings, investments)
+####Health Data (blood tests overall)
+####Ideas List ( tracking ideas/day ) - input form
+####Pull in Health data from health app
